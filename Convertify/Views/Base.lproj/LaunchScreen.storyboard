@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+    <device id="retina5_9" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="EHf-IW-A2E">
+            <objects>
+                <viewController id="01J-lp-oVM" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lcL-8I-czc">
+                                <rect key="frame" x="0.0" y="44" width="375" height="734"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Currency Calculator" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="frX-p9-vgj">
+                                        <rect key="frame" x="50" y="297" width="275" height="140"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="140" id="HyZ-KD-Hpc"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="52"/>
+                                        <color key="textColor" red="0.0" green="0.45882352941176469" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" red="0.0" green="0.85098039219999999" blue="0.59607843140000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstItem="frX-p9-vgj" firstAttribute="centerX" secondItem="lcL-8I-czc" secondAttribute="centerX" id="4hi-ed-TDd"/>
+                                    <constraint firstItem="frX-p9-vgj" firstAttribute="leading" secondItem="lcL-8I-czc" secondAttribute="leading" constant="50" id="UbL-MX-NXE"/>
+                                    <constraint firstItem="frX-p9-vgj" firstAttribute="centerY" secondItem="lcL-8I-czc" secondAttribute="centerY" id="eeN-ae-g8w"/>
+                                    <constraint firstAttribute="trailing" secondItem="frX-p9-vgj" secondAttribute="trailing" constant="50" id="wy3-wO-mHL"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="lcL-8I-czc" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="Qys-gH-Q0q"/>
+                            <constraint firstItem="lcL-8I-czc" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="TTV-ho-hNQ"/>
+                            <constraint firstItem="lcL-8I-czc" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="agg-vY-X3N"/>
+                            <constraint firstItem="lcL-8I-czc" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="tTP-hF-dtL"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="52.173913043478265" y="375"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>
