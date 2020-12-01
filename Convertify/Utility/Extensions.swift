@@ -9,10 +9,7 @@ import Foundation
 import Alamofire
 import SwiftyJSON
 
-fileprivate var aView: UIView?
-
 extension UIViewController {
-//	private static var _user: User? = nil
 	static var API_KEY = "99fad31a9943ed2767b00a35416cd0c2"
 	static var baseUrl = "http://data.fixer.io/api/"
 	static var GET_EXCHANGE_RATE = "latest"
@@ -27,27 +24,6 @@ extension UIViewController {
 		DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + seconds) {
 			alert.dismiss(animated: true, completion: nil)
 		}
-	}
-	
-	func showSpinner() {
-		aView = UIView(frame: self.view.bounds)
-		aView?.backgroundColor = UIColor.init(red: 0.5, green: 0.5, blue: 0.5, alpha: 0.5)
-		
-		let spinner = UIActivityIndicatorView(style: .large)
-		spinner.color = UIColor.AppBlue!
-		spinner.center = aView!.center
-		spinner.startAnimating()
-		aView?.addSubview(spinner)
-		self.view.addSubview(aView!)
-		
-		Timer.scheduledTimer(withTimeInterval: 20.0, repeats: false) { (t) in
-			self.removeSpinner()
-		}
-	}
-	
-	func removeSpinner() {
-		aView?.removeFromSuperview()
-		aView = nil
 	}
 	
 	func get(endPoint: String, parameters: [String : Any]? = [:], headers: [String : Any]? = [:], completion: @escaping (_ success: Bool, _ object: SwiftyJSON.JSON?) -> ()) {
@@ -237,88 +213,5 @@ extension UIView {
 		view.layer.borderWidth = CGFloat(width)
 		view.layer.borderColor = color.cgColor
 		view.clipsToBounds = true
-	}
-}
-
-extension Date {
-	func toString(dateFormat: String) -> String {
-		let dateFormatter = DateFormatter()
-		dateFormatter.dateFormat = dateFormat
-		
-		let dateString = dateFormatter.string(from: self)
-		return dateString
-	}
-	
-	func from(year: Int, month: Int, day: Int) -> Date? {
-		let calendar = Calendar.init(identifier: .gregorian)
-		var dateComponents = DateComponents()
-		dateComponents.year = year
-		dateComponents.month = month
-		dateComponents.day = day
-		return calendar.date(from: dateComponents) ?? nil
-	}
-}
-
-extension String {
-	var isValidEmail: Bool {
-		let emailFormat = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-		let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailFormat)
-		return emailPredicate.evaluate(with: self)
-	}
-	
-	func toDate() -> Date {
-		let formatter = ISO8601DateFormatter()
-		formatter.formatOptions.insert(.withFractionalSeconds)
-		let date = formatter.date(from: self)
-		return date!
-	}
-}
-
-extension UIColor {
-	static let AppBlue = UIColor(hexString: "#011D3E")
-	static let LightBlue = UIColor(hexString: "#D3EAEE")
-	static let AppYellow = UIColor(hexString: "#CBCF34")
-	static let AppGreen = UIColor(hexString: "#008000")
-	
-	public convenience init?(hexString: String) {
-		let r, g, b, a: CGFloat
-		
-		if hexString.hasPrefix("#") {
-			let start = hexString.index(hexString.startIndex, offsetBy: 1)
-			var hexColor = String(hexString[start...])
-			if hexColor.count == 6 {
-				hexColor = hexColor + "ff"
-			}
-			if hexColor.count == 8 {
-				let scanner = Scanner(string: hexColor)
-				var hexNumber: UInt64 = 0
-				
-				if scanner.scanHexInt64(&hexNumber) {
-					r = CGFloat((hexNumber & 0xff000000) >> 24) / 255
-					g = CGFloat((hexNumber & 0x00ff0000) >> 16) / 255
-					b = CGFloat((hexNumber & 0x0000ff00) >> 8) / 255
-					a = CGFloat(hexNumber & 0x000000ff) / 255
-					self.init(red: r, green: g, blue: b, alpha: a)
-					return
-				}
-			}
-		}
-		return nil
-	}
-}
-
-extension UINavigationController {
-	func removeViewController(_ controller: UIViewController.Type) {
-		if let viewController = viewControllers.first(where: { $0.isKind(of: controller.self)}) {
-			viewController.removeFromParent()
-		}
-	}
-}
-
-extension UITextField {
-	func setLeftInset(width: CGFloat) {
-		let insetView = UIView(frame: CGRect(x: 0, y: 0, width: width, height: self.frame.height))
-		self.leftView = insetView
-		self.leftViewMode = .always
 	}
 }
