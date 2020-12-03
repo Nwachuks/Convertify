@@ -9,6 +9,8 @@ import Foundation
 import Alamofire
 import SwiftyJSON
 
+fileprivate var aView: UIView?
+
 extension UIViewController {
 	static var API_KEY = "99fad31a9943ed2767b00a35416cd0c2"
 	static var baseUrl = "http://data.fixer.io/api/"
@@ -24,6 +26,27 @@ extension UIViewController {
 		DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + seconds) {
 			alert.dismiss(animated: true, completion: nil)
 		}
+	}
+	
+	func showSpinner() {
+		aView = UIView(frame: self.view.bounds)
+		aView?.backgroundColor = UIColor.init(red: 0.5, green: 0.5, blue: 0.5, alpha: 0.5)
+		
+		let spinner = UIActivityIndicatorView(style: .large)
+		spinner.color = UIColor.systemBlue
+		spinner.center = aView!.center
+		spinner.startAnimating()
+		aView?.addSubview(spinner)
+		self.view.addSubview(aView!)
+		
+		Timer.scheduledTimer(withTimeInterval: 20.0, repeats: false) { (t) in
+			self.removeSpinner()
+		}
+	}
+	
+	func removeSpinner() {
+		aView?.removeFromSuperview()
+		aView = nil
 	}
 	
 	func get(endPoint: String, parameters: [String : Any]? = [:], headers: [String : Any]? = [:], completion: @escaping (_ success: Bool, _ object: SwiftyJSON.JSON?) -> ()) {
@@ -87,11 +110,32 @@ extension UIViewController {
 }
 
 extension UIView {
-	func applyBorder(color:UIColor, width:Int, radius:Int) {
-		let view = self
-		view.layer.cornerRadius = CGFloat(radius)
-		view.layer.borderWidth = CGFloat(width)
-		view.layer.borderColor = color.cgColor
-		view.clipsToBounds = true
+	func applyBorder(color: UIColor, width: Int, radius: Int) {
+		self.layer.cornerRadius = CGFloat(radius)
+		self.layer.borderWidth = CGFloat(width)
+		self.layer.borderColor = color.cgColor
+		self.clipsToBounds = true
 	}
+	
+//	func startShimmer() {
+//		let light = UIColor.white.cgColor
+//		let alpha = UIColor(red: 206/255, green: 10/255, blue: 10/255, alpha: 0.7).cgColor
+//		let gradient = CAGradientLayer()
+//		gradient.frame = CGRect(x: -self.bounds.size.width, y: 0, width: 3 * self.bounds.size.width, height: self.bounds.size.height)
+//		gradient.colors = [light, alpha, light]
+//		gradient.startPoint = CGPoint(x: 0.0, y: 0.5)
+//		gradient.endPoint = CGPoint(x: 1.0,y: 0.525)
+//		gradient.locations = [0.35, 0.50, 0.65]
+//		self.layer.mask = gradient
+//		let animation = CABasicAnimation(keyPath: "locations")
+//		animation.fromValue = [0.0, 0.1, 0.2]
+//		animation.toValue = [0.8, 0.9,1.0]
+//		animation.duration = 1.5
+//		animation.repeatCount = HUGE
+//		gradient.add(animation, forKey: "shimmer")
+//	}
+//	
+//	func stopShimmer() {
+//		self.layer.mask = nil
+//	}
 }

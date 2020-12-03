@@ -9,6 +9,6 @@ import Foundation
 import RealmSwift
 
 class Currency: Object {
-	@objc dynamic var name: String = ""
-	@objc dynamic var rate: Double = 0.0
+	@objc dynamic var name = ""
+	@objc dynamic var rate = 0.0
 }

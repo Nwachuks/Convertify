@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import RealmSwift
 import DropDown
 import FlagKit
 
@@ -27,87 +28,75 @@ class HomeViewController: UIViewController, UITextFieldDelegate {
 	@IBOutlet weak var infoLabel: UILabel!
 	@IBOutlet weak var infoBtn: UIButton!
 	
+	let realm = try! Realm()
 	var baseValue = 0.0
 	var exchangeValue = 0.0
-	var currency = "USD"
-	var isOtherCurrency = false
-	var otherRate = 1.0
-	var currencies = ["USD", "AED", "AFN", "ALL", "AMD", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KMF", "KPW", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LTL", "LVL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRO", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLL", "SOS", "SRD", "STD", "SVC", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TWD", "TZS", "UAH", "UGX", "UYU", "UZS", "VEF", "VND", "VUV", "WST", "XAF", "XCD", "XDR", "XOF", "XPF", "YER", "ZAR", "ZMK", "ZMW", "ZWL"]
+	var time = ""
+	var currencies = [String]()
 	let baseCurrencyDropDown = DropDown()
 	let exchangeCurrencyDropDown = DropDown()
 	
 	override func viewDidLoad() {
         super.viewDidLoad()
+		setupUI()
 		disableConvert()
-		setup()
 		infoLabel.isHidden = true
 		infoBtn.isHidden = true
-		
-		// Set default flags
-		baseCurrencyImage.image = Flag(countryCode: "EU")?.image(style: .circle)
-		exchangeCurrencyImage.image = Flag(countryCode: "US")?.image(style: .circle)
-		
-		// Setup currency dropdowns
-		setupExchangeCurrencyDropdown()
-		setupBaseCurrencyDropdown()
+		getData { (err) in
+			if err.isEmpty {
+				// Setup currency dropdowns
+				self.setupBaseCurrencyDropdown()
+				self.setupExchangeCurrencyDropdown()
+			} else {
+				self.showToast(controller: self, message: "Error in getting rates. Please try again", seconds: 3.0)
+			}
+			self.removeSpinner()
+		}
     }
     
 	@IBAction func signUpBtnTapped(_ sender: UIButton) {
-		
+		// Segue to Sign Up page
 	}
 	
 	@IBAction func infoBtnTapped(_ sender: UIButton) {
-		let alert = UIAlertController(title: nil, message: "Rates are according to the mid-market values in real time", preferredStyle: .alert)
+		// Show info alert
+		let alert = UIAlertController(title: nil, message: "Rates are according to the latest mid-market values", preferredStyle: .alert)
 		let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
 		alert.addAction(okAction)
 		present(alert, animated: true, completion: nil)
 	}
 	
 	@IBAction func convertBtnTapped(_ sender: UIButton) {
+		// Get base and exchange currency rates
+		let baseCurrency = realm.objects(Currency.self).filter("name = '\(self.baseValueLabel.text!)'").first
+		let exchangeCurrency = realm.objects(Currency.self).filter("name = '\(self.exchangeValueLabel.text!)'").first
+		
 		if let baseValue = Double(baseValueTextField.text!) {
-			let param = "?access_key=\(UIViewController.API_KEY)&symbols=\(currency)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!
-			// Call 'latest' endpoint to get conversion rates
-			get(endPoint: UIViewController.GET_EXCHANGE_RATE+param) { (success, data) in
-				if (success) {
-					let apiData = data!
-//					print(apiData)
-					let currency = Currency()
-					currency.name = apiData["base"].stringValue
-					currency.rate = apiData["rates"]["\(self.currency)"].doubleValue
+			if let baseRate = baseCurrency?.rate {
+				if let exchangeRate = exchangeCurrency?.rate {
+					// Get exchange value for any 2 currencies conversion
+					self.exchangeValue = baseValue * (exchangeRate / baseRate)
+					// Display value to 6 d.p and change color of last 3 digits
+					let exchangeValueText = String(format: "%.6f", self.exchangeValue)
+					let index = (exchangeValueText.firstIndex(of: ".")?.utf16Offset(in: exchangeValueText))! + 4
+					let attributedText = NSMutableAttributedString(string: exchangeValueText)
+					attributedText.addAttribute(.foregroundColor, value: UIColor.lightGray, range: NSMakeRange(index, 3))
+					self.exchangeValueTextField.attributedText = attributedText
+					self.exchangeValueTextField.font = UIFont(name: "Helvetica", size: 24)
 					
-					// Get timestamp and convert to UTC time
-					let time = apiData["timestamp"].doubleValue
-					let date = Date(timeIntervalSince1970: time)
-					let dateFormatter = DateFormatter()
-					dateFormatter.dateFormat = "HH:mm"
-					dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
-					let utcTime = dateFormatter.string(from: date)
-					
-					if (self.isOtherCurrency) {
-						// Using Euro to calibrate conversion
-						self.exchangeValue = baseValue * (currency.rate / self.otherRate)
-						self.isOtherCurrency = false
-					} else {
-						self.exchangeValue = baseValue * currency.rate
-					}
-					DispatchQueue.main.async {
-						// Display value to 6 d.p
-						self.exchangeValueTextField.text = String(format: "%.6f", self.exchangeValue)
-						self.infoLabel.text = "Mid-market exchange rate at \(utcTime) UTC"
-						self.infoLabel.isHidden = false
-						self.infoBtn.isHidden = false
-					}
+					self.infoLabel.text = "Mid-market exchange rate at \(self.time) UTC"
+					self.infoLabel.isHidden = false
+					self.infoBtn.isHidden = false
 				}
 			}
 		} else {
-			// Invalid base value
-			print("Invalid input")
-			showToast(controller: self, message: "Invalid input", seconds: 2.0)
+			showToast(controller: self, message: "Enter valid number", seconds: 2.0)
 		}
 	}
 	
 	// MARK: TextField Delegate Methods
 	@objc func textFieldDidChange(textField: UITextField) {
+		exchangeValueTextField.text = ""
 		if textField.text!.count > 0 {
 			enableConvert()
 		} else {
@@ -120,11 +109,12 @@ class HomeViewController: UIViewController, UITextFieldDelegate {
 		textField.resignFirstResponder()
 	}
 	
-	func setup() {
+	func setupUI() {
 		// Tap to dismiss keyboard
 		let viewTap = UITapGestureRecognizer(target: self, action: #selector(endEditing))
 		view.addGestureRecognizer(viewTap)
 		
+		// Setup UI styling
 		baseValueView.applyBorder(color: .clear, width: 0, radius: 5)
 		exchangeValueView.applyBorder(color: .clear, width: 0, radius: 5)
 		baseCurrencyView.applyBorder(color: .systemGray5, width: 1, radius: 5)
@@ -142,6 +132,10 @@ class HomeViewController: UIViewController, UITextFieldDelegate {
 		// Make flag images rounded corners
 		baseCurrencyImage.applyBorder(color: .clear, width: 0, radius: Int(baseCurrencyImage.frame.height/2))
 		exchangeCurrencyImage.applyBorder(color: .clear, width: 0, radius: Int(exchangeCurrencyImage.frame.height/2))
+		
+		// Set default flags
+		baseCurrencyImage.image = Flag(countryCode: "EU")?.image(style: .circle)
+		exchangeCurrencyImage.image = Flag(countryCode: "US")?.image(style: .circle)
 	}
 	
 	func disableConvert() {
@@ -165,7 +159,6 @@ class HomeViewController: UIViewController, UITextFieldDelegate {
 			self.exchangeValueTextField.text = ""
 			self.exchangeValueLabel.text = item
 			self.exchangeCurrencyLabel.text = item
-			self.currency = item
 			setFlag(item: item, imageView: self.exchangeCurrencyImage)
 		}
 	}
@@ -183,23 +176,7 @@ class HomeViewController: UIViewController, UITextFieldDelegate {
 			self.exchangeValueTextField.text = ""
 			self.baseValueLabel.text = item
 			self.baseCurrencyLabel.text = item
-			setFlag(item: item, imageView: self.baseCurrencyImage)
-			
-			// Call endpoint to get Euro conversion value for base currency
-			let param = "?access_key=\(UIViewController.API_KEY)&symbols=\(item)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!
-			get(endPoint: UIViewController.GET_EXCHANGE_RATE+param) { (success, data) in
-				if (success) {
-					let apiData = data!
-					self.otherRate = apiData["rates"]["\(item)"].doubleValue
-					// EUR is default and only
-					if (item != "EUR") {
-						self.isOtherCurrency = true
-					} else {
-						self.isOtherCurrency = false
-					}
-				}
-			}
-		}
+			setFlag(item: item, imageView: self.baseCurrencyImage)		}
 	}
 	
 	func setFlag(item: String, imageView: UIImageView) {
@@ -237,7 +214,9 @@ class HomeViewController: UIViewController, UITextFieldDelegate {
 			let countryCode = String(item[...item.index(after: item.startIndex)])
 			let flag = Flag(countryCode: countryCode)
 			imageView.backgroundColor = nil
-			imageView.image = flag!.image(style: .circle)
+			if let theFlag = flag {
+				imageView.image = theFlag.image(style: .circle)
+			}
 		}
 	}
 	
@@ -252,6 +231,50 @@ class HomeViewController: UIViewController, UITextFieldDelegate {
 	
 	@objc func endEditing() {
 		view.endEditing(true)
+	}
+	
+	func getData(completion: @escaping (String) -> ()) {
+		self.showSpinner()
+		let param = "?access_key=\(UIViewController.API_KEY)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!
+		// Call 'latest' endpoint to get conversion rates
+		get(endPoint: UIViewController.GET_EXCHANGE_RATE+param) { (success, data) in
+			if (success) {
+				let apiData = data!
+				
+				// Get UNIX timestamp and convert to UTC time
+				let time = apiData["timestamp"].doubleValue
+				let date = Date(timeIntervalSince1970: time)
+				let dateFormatter = DateFormatter()
+				dateFormatter.dateFormat = "HH:mm"
+				dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+				let utcTime = dateFormatter.string(from: date)
+				self.time = utcTime
+				
+				let latestRates = apiData["rates"].dictionaryObject
+				self.realm.beginWrite()
+				self.realm.deleteAll()
+				for (name, rate) in latestRates! {
+					// Get names of currencies
+					self.currencies.append(name)
+					
+					// Save each currency to RealmDB
+					let currency = Currency()
+					currency.name = name
+					currency.rate = rate as! Double
+					self.realm.add(currency)
+				}
+				try! self.realm.commitWrite()
+				self.currencies.sort()
+				
+				DispatchQueue.main.async {
+					completion("")
+				}
+			} else {
+				DispatchQueue.main.async {
+					completion("error")
+				}
+			}
+		}
 	}
 	
 	/*
