@@ -78,6 +78,7 @@ class HomeViewController: UIViewController, UITextFieldDelegate {
 					self.exchangeValue = baseValue * (exchangeRate / baseRate)
 					// Display value to 6 d.p and change color of last 3 digits
 					let exchangeValueText = String(format: "%.6f", self.exchangeValue)
+					// Get index of number 3 digits after decimal point
 					let index = (exchangeValueText.firstIndex(of: ".")?.utf16Offset(in: exchangeValueText))! + 4
 					let attributedText = NSMutableAttributedString(string: exchangeValueText)
 					attributedText.addAttribute(.foregroundColor, value: UIColor.lightGray, range: NSMakeRange(index, 3))
@@ -252,7 +253,7 @@ class HomeViewController: UIViewController, UITextFieldDelegate {
 				
 				let latestRates = apiData["rates"].dictionaryObject
 				self.realm.beginWrite()
-				self.realm.deleteAll()
+				self.realm.delete(self.realm.objects(Currency.self))
 				for (name, rate) in latestRates! {
 					// Get names of currencies
 					self.currencies.append(name)
